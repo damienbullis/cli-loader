@@ -1,0 +1,30 @@
+{
+  "ts-node": {
+    "swc": true // add speedy web compiler (typescript compiler written in rust)
+    // "transpileOnly": true // set to transpileOnly
+  },
+  "compilerOptions": {
+    "outDir": "dist" /* Specify an output folder for all emitted files. */,
+    /* Type Checking */
+    "strict": true /* Enable all strict type-checking options. */,
+    "noUncheckedIndexedAccess": true /* Add 'undefined' to a type when accessed using an index. */,
+    "skipLibCheck": true /* Skip type checking all .d.ts files. */,
+    "declaration": true,
+    "declarationDir": "./dist",
+    // Enable top-level await, and other modern ESM features.
+    "target": "ESNext",
+    "module": "ESNext",
+    // Enable node-style module resolution, for things like npm package imports.
+    "moduleResolution": "node",
+    // Enable JSON imports.
+    "resolveJsonModule": true,
+    // Enable stricter transpilation for better output.
+    "isolatedModules": true,
+    // Report an error when importing a file using a casing different from the casing on disk.
+    "forceConsistentCasingInFileNames": true,
+    // Properly support importing CJS modules in ESM
+    "esModuleInterop": true,
+    "allowJs": true
+  },
+  "include": ["src"]
+}
