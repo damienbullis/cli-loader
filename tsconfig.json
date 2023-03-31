@@ -1,7 +1,8 @@
 {
   "ts-node": {
-    "swc": true // add speedy web compiler (typescript compiler written in rust)
-    // "transpileOnly": true // set to transpileOnly
+    "swc": true, // add speedy web compiler (typescript compiler written in rust)
+    "transpileOnly": true, // set to transpileOnly
+    "esm": true
   },
   "compilerOptions": {
     "outDir": "dist" /* Specify an output folder for all emitted files. */,
