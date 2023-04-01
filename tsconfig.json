@@ -10,8 +10,8 @@
     "strict": true /* Enable all strict type-checking options. */,
     "noUncheckedIndexedAccess": true /* Add 'undefined' to a type when accessed using an index. */,
     "skipLibCheck": true /* Skip type checking all .d.ts files. */,
-    "declaration": true,
-    "declarationDir": "./dist",
+    "declaration": false,
+    // "declarationDir": "./dist",
     // Enable top-level await, and other modern ESM features.
     "target": "ESNext",
     "module": "ESNext",
