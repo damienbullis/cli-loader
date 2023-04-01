@@ -1,34 +1,64 @@
 import chalk from "chalk";
 import ansi from "ansi-escapes";
 
-const loadingBarWidth = 20; // Width of the loading bar in characters
+// Could do it something like this as well...
+// const b = [
+//   5,
+//   4,
+//   3,
+//   2,
+//   1,
+//   0,
+//   0,
+//   0,
+//   0,
+//   0,
+// ]
+
 const spinner = ["◜", "◠", "◝", "◞", "◡", "◟"]; // Spinner animation frames
-const gradientStr = Array.from({ length: loadingBarWidth })
-  .fill(chalk.cyan("█"))
-  .join("");
+const loadingBarWidth = 10; // Width of the loading bar in characters
+const barGradient = [
+  chalk.rgb(253, 247, 195),
+  chalk.rgb(255, 222, 180),
+  chalk.rgb(255, 180, 180),
+  chalk.rgb(244, 164, 255),
+  chalk.rgb(244, 133, 255),
+] as const;
 
-let lPos = 0; // Current position of the loading bar
-let sPos = 0; // Current position of the spinner
+const _loadingBar = Array.from({ length: loadingBarWidth }, (_, i) => {
+  const diff = loadingBarWidth - barGradient.length;
+  if (i >= diff) {
+    return barGradient[i - diff]!;
+  } else {
+    return barGradient[0];
+  }
+});
+
+const loadingBar = () => {
+  const end = _loadingBar.pop()!;
+  _loadingBar.unshift(end);
+  const bar = _loadingBar.map((c) => c("█"));
+  return [end, bar.join("")] as const;
+};
+
+// Spinner Frame #
+let sPos = 0;
 function animationLoop() {
-  // Get the current spinner frame and loading bar gradient
-  const frame = chalk.cyan(spinner[sPos]!);
+  const [first, bar] = loadingBar();
+  const frame = first(spinner[sPos]);
 
-  // Write the animation to the console
-  process.stdout.write("\r" + frame + ` ${gradientStr}` + ansi.cursorHide);
+  process.stdout.write("\r" + frame + " " + bar + ansi.cursorHide);
   sPos = (sPos + 1) % spinner.length;
-
-  // Call this function again in 100 milliseconds
-  setTimeout(animationLoop, 100);
 }
 
 async function main() {
   // Start the animation loop
-  animationLoop();
+  const interval = setInterval(animationLoop, 100);
 
-  // Wait 4 seconds and then exit
   await new Promise((resolve) => setTimeout(resolve, 4000));
-  console.log(ansi.cursorDown(1) + ansi.cursorLeft + chalk.green("Done!"));
 
+  // End
+  console.log(ansi.cursorDown(1) + ansi.cursorLeft + chalk.green("Done!"));
   process.exit(0);
 }
 
