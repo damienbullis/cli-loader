@@ -1,5 +1,14 @@
 import chalk from "chalk";
 import ansi from "ansi-escapes";
+import type { ChalkInstance } from "chalk";
+import { exit, stdout } from "process";
+
+// create a function to mock a long running process
+function mockAsync() {
+  return new Promise<boolean>((resolve) => setTimeout(resolve, 5000));
+}
+
+//#region Constants
 
 const spinner = ["◜", "◠", "◝", "◞", "◡", "◟"]; // Spinner animation frames
 const loadingBarWidth = 10; // Width of the loading bar in characters
@@ -11,16 +20,19 @@ const barGradient = [
   chalk.rgb(255, 222, 180),
 ];
 
-const _loadingBar = Array.from({ length: loadingBarWidth }, (_, i) => {
-  return barGradient[0]!;
-});
+const _loadingBar = Array.from({ length: loadingBarWidth }, () => {
+  return barGradient[0];
+}) as ChalkInstance[];
 
-const loadingBar = () => {
+//#endregion
+
+// TODO: make prop
+const shiftGradient = () => {
   // Inject gradients into the loading bar
   if (barGradient && barGradient.length > 0) {
-    _loadingBar[0] = barGradient.shift()!;
+    _loadingBar[0] = barGradient.shift() as ChalkInstance;
   }
-  const end = _loadingBar.pop()!;
+  const end = _loadingBar.pop() as ChalkInstance;
   _loadingBar.unshift(end);
   const bar = _loadingBar.map((c) => c("█"));
   return [end, bar.join("")] as const;
@@ -28,23 +40,31 @@ const loadingBar = () => {
 
 // Spinner Frame #
 let sPos = 0;
+// TODO: make prop
 function animationLoop() {
-  const [first, bar] = loadingBar();
+  const [first, bar] = shiftGradient();
   const frame = first(spinner[sPos]);
-
-  process.stdout.write("\r" + frame + " " + bar + ansi.cursorHide);
+  stdout.write("\r" + frame + " " + bar + ansi.cursorHide);
   sPos = (sPos + 1) % spinner.length;
 }
 
-async function main() {
-  // Start the animation loop
+// create a function that takes a function and will run it with a loading bar until that function is done
+async function loadingBar<T>(fn: () => Promise<T>) {
   const interval = setInterval(animationLoop, 100);
 
-  await new Promise((resolve) => setTimeout(resolve, 4000));
+  const result = (await fn()) as T;
+
   clearInterval(interval);
-  // End
-  console.log(ansi.cursorDown(1) + ansi.cursorLeft + chalk.green("Done!"));
-  process.exit(0);
+  // TODO: make prop
+  stdout.write("\r" + ansi.eraseLine + chalk.green("✓ Done!") + "\n");
+  return result;
 }
+
+const main = async () => {
+  // Simulate wrapping an async function with the loading bar
+  await loadingBar(() => mockAsync());
+  // Exit After
+  exit(0);
+};
 
 main();

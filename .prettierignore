@@ -7,7 +7,6 @@ coverage
 *.html
 
 # Ignore configs:
-/*.json
 /*.yml
 /*.yaml
 /.*

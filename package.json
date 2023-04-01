@@ -1,23 +1,28 @@
 {
   "name": "cli-loader",
   "version": "0.0.1",
-  "author": "Damien Bullis",
+  "author": {
+    "name": "Damien Bullis",
+    "email": "damienbullis.git@gmail.com"
+  },
   "description": "A CLI Loader",
   "type": "module",
   "scripts": {
     "build": "tsc -p .",
     "dev": "ts-node src/index.ts",
-    "lint": "eslint .",
+    "lint": "eslint --ext .ts .",
+    "lint:fix": "eslint --ext .ts . --fix",
     "pretty": "prettier --write .",
-    "check": "prettier --check .",
+    "pretty:check": "prettier --check .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "cli",
     "loader",
     "progress",
-    "loadbar",
-    "loading"
+    "loading",
+    "bar",
+    "spinner"
   ],
   "license": "MIT",
   "devDependencies": {
