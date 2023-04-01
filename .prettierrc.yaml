@@ -1,0 +1,28 @@
+# .prettierrc.yaml
+
+# Print width (default 80)
+printWidth: 80
+
+# Use tabs instead of spaces (default false)
+useTabs: false
+
+# Indentation width (default 2)
+tabWidth: 2
+
+# Use semicolons at the end of statements (default true)
+semi: true
+
+# Use single quotes instead of double quotes (default false)
+singleQuote: false
+
+# Include a trailing comma on multiline objects and arrays (default none)
+trailingComma: es5
+
+# Specify the file types to process (default none)
+# Require a file path to be explicitely entered for this file
+# "overrides": [
+#   {
+#     "files": "*.md",
+#     "options": { "tabWidth": 4 }
+#   }
+# ]

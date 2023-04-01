@@ -2,7 +2,7 @@
 
 A simple loading bar for the Node based CLIs.
 
-## TODO: (v1.0.0)
+## TODO: (v0.0.1)
 
 - [ ] Turn into a module
   - [ ] Add options

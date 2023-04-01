@@ -1,12 +1,15 @@
 {
   "name": "cli-loader",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "author": "Damien Bullis",
   "description": "A CLI Loader",
   "type": "module",
   "scripts": {
     "build": "tsc -p .",
     "dev": "ts-node src/index.ts",
+    "lint": "eslint .",
+    "pretty": "prettier --write .",
+    "check": "prettier --check .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -18,10 +21,15 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@swc/core": "^1.3.42",
+    "@typescript-eslint/eslint-plugin": "^5.57.0",
+    "@typescript-eslint/parser": "^5.57.0",
+    "eslint-config-prettier": "^8.8.0",
     "@types/node": "^18.15.10",
+    "@swc/core": "^1.3.42",
+    "typescript": "^5.0.2",
     "ts-node": "^10.9.1",
-    "typescript": "^5.0.2"
+    "prettier": "^2.8.7",
+    "eslint": "^8.37.0"
   },
   "peerDependencies": {
     "@types/node": "^18.15.10"

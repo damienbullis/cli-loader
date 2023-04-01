@@ -1,0 +1,19 @@
+# Ignore artifacts:
+dist
+build
+coverage
+
+# Ignore all HTML files:
+*.html
+
+# Ignore configs:
+/*.json
+/*.yml
+/*.yaml
+/.*
+
+# Others 
+**/.git
+**/.svn
+**/.hg
+**/node_modules
