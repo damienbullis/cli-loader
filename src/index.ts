@@ -41,7 +41,7 @@ async function main() {
   const interval = setInterval(animationLoop, 100);
 
   await new Promise((resolve) => setTimeout(resolve, 4000));
-
+  clearInterval(interval);
   // End
   console.log(ansi.cursorDown(1) + ansi.cursorLeft + chalk.green("Done!"));
   process.exit(0);
