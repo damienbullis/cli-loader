@@ -10,56 +10,113 @@ function mockAsync() {
 
 //#region Constants
 
-const spinner = ["◜", "◠", "◝", "◞", "◡", "◟"]; // Spinner animation frames
-const loadingBarWidth = 10; // Width of the loading bar in characters
-const barGradient = [
-  chalk.rgb(253, 247, 195),
-  chalk.rgb(244, 133, 255),
-  chalk.rgb(244, 164, 255),
-  // chalk.rgb(255, 180, 180),
-  chalk.rgb(255, 222, 180),
-];
+const _spinner = ["◜", "◠", "◝", "◞", "◡", "◟"]; // Spinner animation frames
 
-const _loadingBar = Array.from({ length: loadingBarWidth }, () => {
-  return barGradient[0];
-}) as ChalkInstance[];
+const makeGradient = (gradient: colorType[]) =>
+  gradient.map(([r, g, b]) => chalk.rgb(r, g, b));
+
+// Loading bar starts with the first color in the gradient
+const buildLoadingBar = (color: colorType, length: number) =>
+  Array.from({ length }, () => {
+    return chalk.rgb(...color);
+  }) as ChalkInstance[];
 
 //#endregion
 
-// TODO: make prop
-const shiftGradient = () => {
-  // Inject gradients into the loading bar
-  if (barGradient && barGradient.length > 0) {
-    _loadingBar[0] = barGradient.shift() as ChalkInstance;
+const shiftGradient = (
+  gradient: ChalkInstance[],
+  loadingBar: ChalkInstance[]
+) => {
+  // Inject gradients
+  if (gradient && gradient.length > 0) {
+    loadingBar[0] = gradient.shift() as ChalkInstance;
   }
-  const end = _loadingBar.pop() as ChalkInstance;
-  _loadingBar.unshift(end);
-  const bar = _loadingBar.map((c) => c("█"));
-  return [end, bar.join("")] as const;
+  loadingBar.unshift(loadingBar.pop() as ChalkInstance);
+  // Create the loading bar
+  const [first, ...rest] = loadingBar as [ChalkInstance, ...ChalkInstance[]];
+  const bar = rest.reduce((acc, c) => acc + c("█"), "");
+  return [first, bar] as const;
 };
 
-// Spinner Frame #
-let sPos = 0;
-// TODO: make prop
-function animationLoop() {
-  const [first, bar] = shiftGradient();
-  const frame = first(spinner[sPos]);
-  stdout.write("\r" + frame + " " + bar + ansi.cursorHide);
-  sPos = (sPos + 1) % spinner.length;
+let sPos = 0; // Spinner Frame Position
+function animationLoop(
+  gradient: ChalkInstance[],
+  loadingBar: ChalkInstance[],
+  showSpinner: boolean
+) {
+  const [first, bar] = shiftGradient(gradient, loadingBar);
+  const frame = first(_spinner[sPos]);
+  const spin = showSpinner ? frame + " " : "";
+  stdout.write("\r" + spin + bar + ansi.cursorHide);
+  sPos = (sPos + 1) % _spinner.length;
+}
+type colorType = [number, number, number];
+type loadingBarOptions = {
+  gradient?: colorType[];
+  loadingBarLength?: number;
+  animationSpeed?: number;
+  showSpinner?: boolean;
+  showComplete?: boolean;
+  completeMessage?: string;
+};
+
+const defaultOptions = {
+  gradient: [
+    [253, 247, 195], // Base Color
+    [244, 133, 255], // Head Color
+    [244, 164, 255], // ...Tail Colors
+    [255, 222, 180],
+  ],
+  loadingBarLength: 10,
+  animationSpeed: 100,
+  showSpinner: true,
+  showComplete: true,
+  completeMessage: "✓ Done!",
+} satisfies loadingBarOptions;
+
+function makeLoadingBar(options?: loadingBarOptions) {
+  const {
+    gradient,
+    loadingBarLength,
+    animationSpeed,
+    showSpinner,
+    showComplete,
+    completeMessage,
+  } = Object.assign({}, defaultOptions, options);
+
+  const _gradient = makeGradient(gradient);
+  const _baseGradient = [...(gradient[0] || [255, 255, 255])] as colorType;
+  const _loadingBar = buildLoadingBar(_baseGradient, loadingBarLength);
+
+  return async function <T>(fn: () => Promise<T>): Promise<Awaited<T>> {
+    const interval = setInterval(
+      () => animationLoop(_gradient, _loadingBar, showSpinner),
+      animationSpeed
+    );
+
+    const result = await fn();
+
+    clearInterval(interval);
+
+    if (showComplete)
+      stdout.write("\r" + ansi.eraseLine + chalk.green(completeMessage) + "\n");
+    return result;
+  };
 }
 
-// create a function that takes a function and will run it with a loading bar until that function is done
-async function loadingBar<T>(fn: () => Promise<T>) {
-  const interval = setInterval(animationLoop, 100);
+// Example Usage - Create Custom Loading Bar
+const loadingBar = makeLoadingBar({
+  gradient: [
+    [153, 247, 195],
+    [144, 133, 255],
+    [144, 164, 255],
+    [155, 222, 180],
+  ],
+  showSpinner: false,
+  loadingBarLength: 20,
+});
 
-  const result = (await fn()) as T;
-
-  clearInterval(interval);
-  // TODO: make prop
-  stdout.write("\r" + ansi.eraseLine + chalk.green("✓ Done!") + "\n");
-  return result;
-}
-
+// Example Usage - Use Loading Bar
 const main = async () => {
   // Simulate wrapping an async function with the loading bar
   await loadingBar(() => mockAsync());
