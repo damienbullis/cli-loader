@@ -6,7 +6,7 @@ A simple loading bar for the Node based CLIs.
 
 I want to make support a % based system as well.
 
-I also want to use change the gradient to a simplier function
+I also want to change the gradient to use a simplier function
 
 ```js
 const gradient = [color1, color2, color3, color4, ...etc];
@@ -20,6 +20,10 @@ const loadingBar = [
   ...etc,
 ];
 ```
+
+for loop through the loading bar and use the gradient array to get the color.
+then we can also use a position index to set max index for the gradient
+to imply the % progress.
 
 This will allow for a more customizable loading bar & will allow for a more customizable gradient, while being simpler to implement.
 
