@@ -13,6 +13,7 @@ extends:
 ignorePatterns:
   - node_modules
   - dist
+  - "*.config.*"
 
 parser: "@typescript-eslint/parser"
 parserOptions:
