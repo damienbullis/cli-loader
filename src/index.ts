@@ -1,59 +1,47 @@
-import chalk, { ChalkInstance } from "chalk";
 import ansi from "ansi-escapes";
 import { exit, stdout } from "process";
 
-// Spinner Characters
-const _spinnerChars = ["◜", "◝", "◞", "◟"];
+// Characters
+const _spinnerChars = ["◜", "◠", "◝", "◞", "◡", "◟"];
+const _chars = ["█", "▓", " "] as const;
+
+type rgbFnType = (r: number, g: number, b: number) => (c: string) => string;
+const rgb: rgbFnType = (r, g, b) => (c: string) =>
+  `\x1B[38;2;${r};${g};${b}m${c}\x1B[39m`;
+const bg: rgbFnType = (r, g, b) => (c: string) =>
+  `\x1B[48;2;${r};${g};${b}m${c}\x1B[49m`;
 
 // Helper Functions
-type Color = {
+type GradientProps = {
   start: [number, number, number];
   end: [number, number, number];
+  stops: number;
 };
-function createGradient(
-  colors: Color,
-  stops: number,
-  mode: "rgb" | "bgRgb" = "rgb"
-): ChalkInstance[] {
-  const gradientArray = [];
+type Color = (s: string) => string;
+function createGradient({
+  start,
+  end,
+  stops,
+}: GradientProps): [Color, ...Color[]] {
+  const gradientArray: Color[] = [];
 
   // calculate the step size for each color component
-  const rStep = (colors.end[0] - colors.start[0]) / stops;
-  const gStep = (colors.end[1] - colors.start[1]) / stops;
-  const bStep = (colors.end[2] - colors.start[2]) / stops;
+  const rStep = (end[0] - start[0]) / stops;
+  const gStep = (end[1] - start[1]) / stops;
+  const bStep = (end[2] - start[2]) / stops;
 
   // interpolate each color component for each stop
   for (let i = 0; i <= stops; i++) {
-    const r = Math.round(colors.start[0] + i * rStep);
-    const g = Math.round(colors.start[1] + i * gStep);
-    const b = Math.round(colors.start[2] + i * bStep);
+    const r = Math.round(start[0] + i * rStep);
+    const g = Math.round(start[1] + i * gStep);
+    const b = Math.round(start[2] + i * bStep);
 
-    gradientArray.push(chalk[mode](r, g, b));
+    gradientArray.push(bg(r, g, b));
   }
-
-  return gradientArray;
+  return gradientArray as [Color, ...Color[]];
 }
 
-const _bgColors = createGradient(
-  {
-    start: [223, 237, 185],
-    end: [244, 133, 255],
-  },
-  8,
-  "bgRgb"
-);
-const _colors = createGradient(
-  {
-    start: [223, 237, 185],
-    end: [244, 133, 255],
-  },
-  8,
-  "rgb"
-);
-
-const _chars = ["█", "▓", " "] as const;
-
-function rotateArrayInPlace(arr: unknown[], k: number) {
+function rotateArray(arr: unknown[], k: number) {
   k = k % arr.length;
   if (k === 0) return;
 
@@ -62,81 +50,108 @@ function rotateArrayInPlace(arr: unknown[], k: number) {
   }
 }
 
-const barLength = 8,
-  notLoaded = (_colors[0] as ChalkInstance)(_chars[1]),
-  speed = 200;
+const defaultOptions = {
+  gradient: {
+    start: [223, 237, 185],
+    end: [244, 133, 255],
+    stops: 8,
+  },
+  length: 8,
+  speed: 200,
+  showSpinner: true,
+  showPercent: false,
+  doneMessage: `✓ Done!`,
+} satisfies LoadingBarOptions;
 
-const loadingBar = async (...proms: Promise<unknown>[]) => {
-  stdout.write(ansi.eraseLine + ansi.cursorHide + "\n" + ansi.cursorUp(1));
-  const progressStep = Math.round((1 / proms.length) * barLength);
-
-  let spinnerIndex = 0,
-    colorIndex = 0,
-    progress = progressStep;
-
-  const barArr = new Array<number>(barLength).fill(0),
-    toggle = [
-      [_colors, _chars[0]],
-      [_bgColors, _chars[2]],
-    ] as const,
-    toggleMode: 0 | 1 = 0,
-    interval = setInterval(() => {
-      let bar = "";
-      // Inject Gradient
-      if (colorIndex < _colors.length) {
-        barArr[0] = _colors.length - colorIndex - 1;
-        colorIndex++;
-      }
-      // Build Loading Bar
-      barArr.forEach((c, i) => {
-        if (i < progress) {
-          const res = toggle[toggleMode][0][c]; // toggle -> _color
-          if (res) bar += res(toggle[toggleMode][1]); // toggle -> _chars[0]
-        } else {
-          bar += notLoaded;
-        }
-      });
-
-      const percentage = ` ${Math.min(
-          Math.round((progress / barLength) * 100),
-          100
-        )}% `,
-        showPercent: "first" | "last" | "none" = "none",
-        first = _colors[barArr[0] as number],
-        last = _colors[0];
-
-      // Render
-      stdout.write(
-        "\r" +
-          (first
-            ? first(
-                _spinnerChars[spinnerIndex as keyof typeof _spinnerChars] +
-                  " " || ""
-              ) + (showPercent === "first" ? first(percentage) : "")
-            : "") +
-          bar +
-          (last && showPercent === "last" ? last(percentage) : "")
-      );
-
-      // Update
-      rotateArrayInPlace(barArr, 1);
-      spinnerIndex = (spinnerIndex + 1) % _spinnerChars.length;
-    }, speed),
-    results: unknown[] = [];
-
-  proms.forEach((p) => {
-    p.then((res) => {
-      progress += progressStep;
-      results.push(res);
-    });
-  });
-  await Promise.all(proms);
-
-  clearInterval(interval);
-  stdout.write(ansi.eraseLine + "\r" + chalk.green("Done!") + "\n\n");
-
-  return results;
+type LoadingBarOptions = {
+  gradient?: GradientProps;
+  length?: number;
+  speed?: number;
+  showSpinner?: boolean;
+  showPercent?: "first" | "last" | false;
+  doneMessage?: string;
 };
+
+function makeLoadingBar(options: LoadingBarOptions = {}) {
+  const { gradient, length, speed, showSpinner, showPercent, doneMessage } = {
+      ...defaultOptions,
+      ...options,
+    },
+    _gradient = createGradient(gradient);
+
+  return async (...proms: Promise<unknown>[]) => {
+    // Clear the screen
+    stdout.write(ansi.eraseLine + ansi.cursorHide + "\n" + ansi.cursorUp(1));
+
+    // Calculate Progress Step
+    const progressStep = Math.round((1 / proms.length) * length),
+      barArr = new Array<number>(length).fill(0);
+
+    // Initialize
+    let spinnerIndex = 0,
+      progress = progressStep;
+
+    // Add Gradient
+    for (let i = 0; i < _gradient.length; i++) {
+      barArr[barArr.length - i] = _gradient.length - 1 - i;
+    }
+
+    // Animation Loop
+    const interval = setInterval(() => {
+        // Generate Loading Bar String
+        let bar = "";
+        barArr.forEach((c, i) => {
+          if (i <= progress) {
+            const res = _gradient[c];
+            if (res) bar += res(_chars[2]);
+          } else {
+            bar += rgb(223, 237, 185)(_chars[1]);
+          }
+        });
+        if (barArr[0] == null) return;
+
+        const percentage = ` ${Math.min(
+            Math.round((progress / length) * 100),
+            100
+          )}% `,
+          percentFn = rgb(223, 237, 185),
+          spinner = showSpinner
+            ? percentFn(_spinnerChars[spinnerIndex] + " " || "")
+            : "";
+        // Render Loading Bar
+        stdout.write(
+          "\r" +
+            spinner +
+            (showPercent === "first" ? percentFn(percentage) : "") +
+            bar +
+            (showPercent === "last" ? percentFn(percentage) : "")
+        );
+
+        // Update
+        rotateArray(barArr, 1);
+        spinnerIndex = (spinnerIndex + 1) % _spinnerChars.length;
+      }, speed),
+      results: unknown[] = [];
+
+    proms.forEach((p) => {
+      p.then((res) => {
+        progress += progressStep;
+        results.push(res);
+      });
+    });
+    await Promise.all(proms);
+    clearInterval(interval);
+
+    stdout.write(
+      ansi.eraseLine + "\r" + rgb(56, 229, 77)(doneMessage) + "\n\n"
+    );
+
+    return results;
+  };
+}
+
+/** Primary Loading Bar Function */
+const loadingBar = makeLoadingBar();
 
 // Example Usage
 // Example Usage
@@ -144,12 +159,12 @@ const loadingBar = async (...proms: Promise<unknown>[]) => {
 
 const main = async () => {
   const res = await loadingBar(
-    new Promise((res) => setTimeout(() => res("1"), 3000)),
-    new Promise((res) => setTimeout(() => res("2"), 6000)),
-    new Promise((res) => setTimeout(() => res("a"), 7000)),
-    new Promise((res) => setTimeout(() => res("4"), 10000)),
-    new Promise((res) => setTimeout(() => res("5"), 2000)),
-    new Promise((res) => setTimeout(() => res("6"), 13000))
+    new Promise(() => {})
+    // new Promise((res) => setTimeout(() => res("2"), 3000)),
+    // new Promise((res) => setTimeout(() => res("a"), 3000)),
+    // new Promise((res) => setTimeout(() => res("4"), 4000)),
+    // new Promise((res) => setTimeout(() => res("5"), 5000)),
+    // new Promise((res) => setTimeout(() => res("6"), 6000))
   );
   console.log(res);
   exit(0);
