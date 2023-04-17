@@ -2,38 +2,14 @@
 
 A simple loading bar for the Node based CLIs.
 
-## Refactor (v0.0.2)
-
-I want to make support a % based system as well.
-
-I also want to change the gradient to use a simplier function
-
-```js
-const gradient = [color1, color2, color3, color4, ...etc];
-const loadingBar = [
-  0, // Gradient Base
-  0,
-  1,
-  2,
-  3, // Gradient Tail
-  4, // Gradient Head
-  ...etc,
-];
-```
-
-for loop through the loading bar and use the gradient array to get the color.
-then we can also use a position index to set max index for the gradient
-to imply the % progress.
-
-This will allow for a more customizable loading bar & will allow for a more customizable gradient, while being simpler to implement.
-
-Also easier to implement a % based system.
+[![Build Status](https://img.shields.io/travis/username/repo.svg)](https://travis-ci.org/username/repo)
+[![Static](https://img.shields.io/badge/dynamic/json?label=version&query=%24.version&url=https%3A%2F%2Fraw.githubusercontent.com%2Fdamienbullis%2Fcli-loader%2Fmain%2F.badges.json)](https://github.com/damienbullis/cli-loader)
 
 ## TODO: (v0.0.1)
 
 - [ ] Turn into a module
   - [x] Add options
-  - [ ] Add progress bar
+  - [x] Add progress bar
 - [ ] Add tests
 - [ ] Add documentation
 - [ ] Add Gif
