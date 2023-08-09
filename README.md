@@ -2,34 +2,19 @@
 
 A simple loading bar for the Node based CLIs.
 
-## Refactor (v0.0.2)
+[![Top Language](https://img.shields.io/github/languages/top/damienbullis/cli-loader?color=hotpink&logo=typescript&label&logoColor=white)](https://github.com/damienbullis/cli-loader)
+[![Stars](https://img.shields.io/github/stars/damienbullis/cli-loader?color=hotpink)](https://github.com/damienbullis/cli-loader)
 
-I want to make support a % based system as well.
+[![Version](https://img.shields.io/github/package-json/version/damienbullis/cli-loader?color=hotpink)](https://github.com/damienbullis/cli-loader)
+[![Coverage](https://img.shields.io/badge/dynamic/json?label=coverage&query=%24.coverage&url=https%3A%2F%2Fraw.githubusercontent.com%2Fdamienbullis%2Fcli%2Dloader%2Fsecond_approach%2F%2Ebadges.json?&color=hotpink)](https://github.com/damienbullis/cli-loader)
 
-I also want to use change the gradient to a simplier function
-
-```js
-const gradient = [color1, color2, color3, color4, ...etc];
-const loadingBar = [
-  0, // Gradient Base
-  0,
-  1,
-  2,
-  3, // Gradient Tail
-  4, // Gradient Head
-  ...etc,
-];
-```
-
-This will allow for a more customizable loading bar & will allow for a more customizable gradient, while being simpler to implement.
-
-Also easier to implement a % based system.
+[![Branch Check](https://img.shields.io/github/checks-status/damienbullis/cli-loader/main?label=main)](https://github.com/damienbullis/cli-loader)
 
 ## TODO: (v0.0.1)
 
 - [ ] Turn into a module
   - [x] Add options
-  - [ ] Add progress bar
+  - [x] Add progress bar
 - [ ] Add tests
 - [ ] Add documentation
 - [ ] Add Gif
